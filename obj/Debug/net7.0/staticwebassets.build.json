@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "LZt5/H3s+WwXHqXYjG0UkvFjLljd5FmPvYsrHd1Bz3w=",
+  "Source": "authserver",
+  "BasePath": "_content/authserver",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

@@ -1,0 +1,5 @@
+# Ignore appsettings with potential secrets
+appsettings.Development.json
+appsettings.Production.json
+# If you want to exclude all non-template appsettings files:
+# appsettings.*.json

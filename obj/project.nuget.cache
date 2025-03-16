@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ru3J16nppu4=",
+  "success": true,
+  "projectFilePath": "/Users/lau/Downloads/authserver/authserver.csproj",
+  "expectedPackageFiles": [
+    "/Users/lau/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/9.0.3/microsoft.aspnetcore.authentication.jwtbearer.9.0.3.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.data.sqlite/9.0.3/microsoft.data.sqlite.9.0.3.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.data.sqlite.core/9.0.3/microsoft.data.sqlite.core.9.0.3.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.2/microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.abstractions/8.6.1/microsoft.identitymodel.abstractions.8.6.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.jsonwebtokens/8.6.1/microsoft.identitymodel.jsonwebtokens.8.6.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.logging/8.6.1/microsoft.identitymodel.logging.8.6.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.protocols/8.0.1/microsoft.identitymodel.protocols.8.0.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.protocols.openidconnect/8.0.1/microsoft.identitymodel.protocols.openidconnect.8.0.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/microsoft.identitymodel.tokens/8.6.1/microsoft.identitymodel.tokens.8.6.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.10/sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
+    "/Users/lau/.nuget/packages/sqlitepclraw.core/2.1.10/sqlitepclraw.core.2.1.10.nupkg.sha512",
+    "/Users/lau/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.10/sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
+    "/Users/lau/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.10/sqlitepclraw.provider.e_sqlite3.2.1.10.nupkg.sha512",
+    "/Users/lau/.nuget/packages/system.identitymodel.tokens.jwt/8.6.1/system.identitymodel.tokens.jwt.8.6.1.nupkg.sha512",
+    "/Users/lau/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512"
+  ],
+  "logs": []
+}
