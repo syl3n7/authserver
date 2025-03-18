@@ -61,3 +61,4 @@
 /Users/lau/Downloads/authserver/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
 /Users/lau/Downloads/authserver/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/lau/Downloads/authserver/bin/Debug/net9.0/runtimes/browser-wasm/nativeassets/net9.0/e_sqlite3.a
+/Users/lau/Downloads/authserver/obj/Debug/net9.0/authserver.sourcelink.json
