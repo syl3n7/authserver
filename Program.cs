@@ -5,35 +5,66 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Get certificate password from configuration or environment variable
-// In production, use environment variables or secrets manager
+// Certificate setup - safe implementation
 var certPassword = builder.Configuration["Certificate:Password"] ?? "YourSecurePassword";
-var certPath = builder.Configuration["Certificate:Path"] ?? 
-               Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
-                           ".aspnet", "https", "authserver.pfx");
+var certPath = builder.Configuration["Certificate:Path"];
 
-// Configure Kestrel to listen on ports with HTTPS
+if (string.IsNullOrEmpty(certPath))
+{
+    // Use default location in user profile
+    var certDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        ".aspnet",
+        "https");
+    
+    Directory.CreateDirectory(certDir);
+    certPath = Path.Combine(certDir, "authserver.pfx");
+}
+else
+{
+    // If a custom path is provided, ensure its directory exists
+    string certDir = Path.GetDirectoryName(certPath);
+    if (!string.IsNullOrEmpty(certDir))
+    {
+        Directory.CreateDirectory(certDir);
+    }
+    else
+    {
+        // If no directory component, place it in current directory
+        certPath = Path.Combine(Directory.GetCurrentDirectory(), certPath);
+    }
+}
+
+Console.WriteLine($"Using certificate path: {certPath}");
+
+if (!File.Exists(certPath))
+{
+    Console.WriteLine($"Certificate not found. Generating a new self-signed certificate...");
+    GenerateSelfSignedCertificate(certPath, certPassword);
+}
+
+// Configure Kestrel to listen on both HTTP and HTTPS
 builder.WebHost.ConfigureKestrel(options =>
 {
-    // HTTP on port 5555 (optional, you might want to remove in production)
     options.Listen(IPAddress.Any, 5555);
     
-    // HTTPS on port 5556
     options.Listen(IPAddress.Any, 5556, listenOptions =>
     {
-        // Load certificate
-        if (File.Exists(certPath))
+        try
         {
             listenOptions.UseHttps(certPath, certPassword);
             Console.WriteLine($"HTTPS enabled with certificate from: {certPath}");
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine($"Certificate not found at {certPath}. HTTPS will not be available.");
+            Console.WriteLine($"Failed to configure HTTPS: {ex.Message}");
+            Console.WriteLine("HTTPS will not be available.");
         }
     });
 });
@@ -54,7 +85,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    // Set to true as requested
     options.RequireHttpsMetadata = true;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
@@ -69,7 +99,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddSingleton<Database>();
 
@@ -79,9 +108,6 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(
         policy =>
         {
-            // Keep allowing any origin for university project as requested
-            // In production, you should replace with specific origins:
-            // policy.WithOrigins("https://yourgame.com", "https://www.yourdomain.com")
             policy.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
@@ -99,16 +125,12 @@ builder.Services.AddHttpLogging(logging =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-
-// Add this custom middleware to log requests
+// Log requests middleware
 app.Use(async (context, next) =>
 {
-    // Log the request details
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine($"[{DateTime.Now}] Request: {context.Request.Method} {context.Request.Path}{context.Request.QueryString}");
     
-    // Capture the request body for POST/PUT requests
     if (context.Request.Method == "POST" || context.Request.Method == "PUT")
     {
         context.Request.EnableBuffering();
@@ -122,23 +144,17 @@ app.Use(async (context, next) =>
             var body = await reader.ReadToEndAsync();
             Console.WriteLine($"Request Body: {body}");
             
-            // Reset the request body position for the next middleware
             context.Request.Body.Position = 0;
         }
     }
     
     Console.ResetColor();
-    
-    // Call the next middleware
     await next();
 });
 
-app.UseCors(); // Enable CORS
-
-// Enable HTTPS redirection
+app.UseCors();
 app.UseHttpsRedirection();
-
-app.UseAuthentication(); // Add JWT authentication middleware - must be before authorization
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -152,3 +168,54 @@ Console.WriteLine($"Database location: {AppDomain.CurrentDomain.BaseDirectory}us
 Console.ResetColor();
 
 app.Run();
+
+void GenerateSelfSignedCertificate(string certPath, string password)
+{
+    try
+    {
+        string subject = "CN=localhost";
+        
+        using (RSA rsa = RSA.Create(2048))
+        {
+            var request = new CertificateRequest(
+                subject, 
+                rsa, 
+                HashAlgorithmName.SHA256, 
+                RSASignaturePadding.Pkcs1);
+
+            request.CertificateExtensions.Add(
+                new X509BasicConstraintsExtension(false, false, 0, true));
+                
+            request.CertificateExtensions.Add(
+                new X509KeyUsageExtension(
+                    X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
+                    false));
+                    
+            request.CertificateExtensions.Add(
+                new X509EnhancedKeyUsageExtension(
+                    new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") },
+                    false));
+
+            var sanBuilder = new SubjectAlternativeNameBuilder();
+            sanBuilder.AddDnsName("localhost");
+            sanBuilder.AddIpAddress(IPAddress.Parse("127.0.0.1"));
+            sanBuilder.AddIpAddress(IPAddress.Parse("::1"));
+            request.CertificateExtensions.Add(sanBuilder.Build());
+
+            var certificate = request.CreateSelfSigned(
+                DateTimeOffset.UtcNow.AddDays(-1),
+                DateTimeOffset.UtcNow.AddYears(1));
+
+            File.WriteAllBytes(
+                certPath,
+                certificate.Export(X509ContentType.Pfx, password));
+                
+            Console.WriteLine($"Self-signed certificate created successfully at {certPath}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Failed to generate certificate: {ex.Message}");
+        throw;
+    }
+}
