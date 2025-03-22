@@ -106,3 +106,4 @@ Thumbs.db
 # Generated JWT keys
 jwt-keys/
 .fake
+/bin
